@@ -27,7 +27,7 @@ app.post("/api/request", async (req, res) => {
       RequestId: request.id
     });
 
-    const approvalLink = `https://tnpetro.github.io/email-approval/#/approve/${request.id}/${token.token}`;
+    const approvalLink = `http://localhost:5173/approve/${request.id}/${token.token}`;
 
     await sendMail(
       process.env.FUNCTIONAL_HEAD_EMAIL,
@@ -188,7 +188,7 @@ app.post("/api/approve/:id/:token", async (req, res) => {
       await sendMail(
         process.env.HR_EMAIL,
         "Approval Required – HR Review",
-        `<p><a href="https://tnpetro.github.io/email-approval/#/approve/${id}/${next.token}">HR Approval Link</a></p>`
+        `<p><a href="http://localhost:5173/approve/${id}/${next.token}">HR Approval Link</a></p>`
       );
     }
 
@@ -201,7 +201,7 @@ app.post("/api/approve/:id/:token", async (req, res) => {
       await sendMail(
         process.env.IT_EMAIL,
         "Approval Required – IT Action",
-        `<p><a href="https://tnpetro.github.io/email-approval/#/approve/${id}/${next.token}">IT Approval Link</a></p>`
+        `<p><a href="http://localhost:5173/approve/${id}/${next.token}">IT Approval Link</a></p>`
       );
     }
 
@@ -215,5 +215,5 @@ app.post("/api/approve/:id/:token", async (req, res) => {
 });
 
 app.listen(5005, () =>
-  console.log("Backend running !")
+  console.log("Backend running on http://localhost:5005")
 );
