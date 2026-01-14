@@ -1,4 +1,4 @@
-const sequelize = require("../db");
+const sequelize = require("../database/db");
 const Request = require("./Request");
 const ApprovalToken = require("./ApprovalToken");
 

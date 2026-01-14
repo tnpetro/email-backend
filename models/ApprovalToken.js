@@ -1,5 +1,5 @@
 const { DataTypes } = require("sequelize");
-const sequelize = require("../db");
+const sequelize = require("../database/db");
 
 const ApprovalToken = sequelize.define("ApprovalToken", {
   token: DataTypes.STRING,
