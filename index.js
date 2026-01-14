@@ -24,6 +24,6 @@ app.use("/api/approve", approveRoute);
 app.use("/api/audit-report", auditRoute);
 
 
-app.listen(process.env.PORT, () =>
+app.listen(process.env.PORT, '0.0.0.0', () =>
   console.log(`Backend running on http://localhost:${process.env.PORT}`)
 );
