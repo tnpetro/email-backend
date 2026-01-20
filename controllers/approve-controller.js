@@ -81,9 +81,29 @@ const postApproveController = async (req, res) => {
 
         await sendMail(
           process.env.IT_EMAIL,
-          "Email ID Creation – Rejected",
-          `<p>Request rejected by IT</p><p>Remarks: ${remarks || "None"}</p>`
+          "Email ID Creation Request – Rejected by IT",
+          `
+          <p>Dear Team,</p>
+
+          <p>The Email ID Creation request has been <strong>reviewed and rejected by IT</strong>.</p>
+
+          <p>
+            <strong>Employee Name:</strong> ${request.firstName} ${request.lastName}<br/>
+            <strong>Employee Type:</strong> ${request.employeeType}
+          </p>
+
+          <p>
+            <strong>Remarks:</strong><br/>
+            ${remarks || "No remarks provided"}
+          </p>
+
+          <p>No further action will be taken on this request.</p>
+
+          <p>Regards,<br/>
+          <strong>TPL IT Service Portal</strong></p>
+          `
         );
+
 
         return res.json({ message: "IT rejected. Workflow stopped." });
       }
@@ -94,9 +114,24 @@ const postApproveController = async (req, res) => {
 
       await sendMail(
         process.env.IT_EMAIL,
-        "Email ID Creation – Approved",
-        `<p>Email ID request approved successfully.</p>`
+        "Email ID Creation Request – Approved",
+        `
+        <p>Dear Team,</p>
+
+        <p>The Email ID Creation request has been <strong>successfully approved</strong> by the IT department.</p>
+
+        <p>
+        <strong>Employee Name:</strong> ${request.firstName} ${request.lastName}<br/>
+        <strong>Employee Type:</strong> ${request.employeeType}
+        </p>
+
+        <p>Please proceed with the necessary account creation activities as per policy.</p>
+
+        <p>Regards,<br/>
+        <strong>TPL IT Service Portal</strong></p>
+        `
       );
+
 
       return res.json({ message: "IT approval completed" });
     }
@@ -120,7 +155,21 @@ const postApproveController = async (req, res) => {
 
     if (decision === "reject") {
       request.status = "Rejected";
-      request[approvalToken.role] = "Rejected";
+
+      if (approvalToken.role === "functional") {
+        request.functionalHead = "Rejected";
+        request.hr = "Cancelled";
+        request.it = "Cancelled";
+      }
+
+      if (approvalToken.role === "hr") {
+        request.hr = "Rejected";
+        request.it = "Cancelled";
+      }
+
+      if (approvalToken.role === "it") {
+        request.it = "Rejected";
+      }
 
       await ApprovalToken.update(
         { used: true },
@@ -129,16 +178,41 @@ const postApproveController = async (req, res) => {
 
       await request.save();
 
-      let rejectionRemarks = remarks || "None";
-
       await sendMail(
         process.env.IT_EMAIL,
-        "Email ID Creation – Rejected",
-        `<p>Request rejected by ${approvalToken.role.toUpperCase()}</p><p>Remarks: ${rejectionRemarks}</p>`
+        "Email ID Creation Request – Rejected",
+        `
+        <p>Dear Team,</p>
+
+        <p>
+          The Email ID Creation request has been <strong>rejected</strong> by the
+          <strong>${approvalToken.role.toUpperCase()}</strong> department.
+        </p>
+
+        <p>
+          <strong>Employee Name:</strong> ${request.firstName} ${request.lastName}<br/>
+          <strong>Employee Type:</strong> ${request.employeeType}
+        </p>
+
+        <p>
+          <strong>Remarks:</strong><br/>
+          ${remarks || "No remarks provided"}
+        </p>
+
+        <p>The approval workflow has been terminated.</p>
+
+        <p>Regards,<br/>
+        <strong>TPL IT Service Portal</strong></p>
+        `
       );
 
-      return res.json({ message: "Request rejected. Workflow terminated." });
+
+      return res.json({
+        message: "Request rejected. Workflow terminated."
+      });
     }
+
+
 
     if (approvalToken.role === "functional") {
       request.functionalHead = "Approved";
@@ -148,9 +222,32 @@ const postApproveController = async (req, res) => {
 
       await sendMail(
         process.env.HR_EMAIL,
-        "Approval Required – HR Review",
-        `<p><a href="${process.env.FRONTEND_URL}/approve/${id}/${next.token}">HR Approval Link</a></p>`
+        "Action Required: Email ID Creation Request – HR Approval",
+        `
+        <p>Dear HR Team,</p>
+
+        <p>An Email ID Creation request has been <strong>approved by the Functional Head</strong> and now requires your review.</p>
+
+        <p>
+          <strong>Employee Name:</strong> ${request.employeeName}<br/>
+          <strong>Employee Type:</strong> ${request.employeeType}
+        </p>
+        <p>
+          <strong>Action Required:</strong><br/>
+          Please review and approve or reject the request using the link below.
+        </p>
+
+        <p>
+          <a href="${process.env.FRONTEND_URL}/approve/${id}/${next.token}">
+            Click here to review the request
+          </a>
+        </p>
+
+      <p>Regards,<br/>
+      <strong>TPL IT Service Portal</strong></p>
+      `
       );
+
     }
 
     if (approvalToken.role === "hr") {
@@ -161,9 +258,33 @@ const postApproveController = async (req, res) => {
 
       await sendMail(
         process.env.IT_EMAIL,
-        "Approval Required – IT Action",
-        `<p><a href="${process.env.FRONTEND_URL}/approve/${id}/${next.token}">IT Approval Link</a></p>`
+        "Action Required: Email ID Creation Request – IT Approval",
+        `
+          <p>Dear IT Team,</p>
+
+          <p>An Email ID Creation request has been <strong>approved by HR</strong> and is pending your action.</p>
+
+          <p>
+            <strong>Employee Name:</strong> ${request.employeeName}<br/>
+            <strong>Employee Type:</strong> ${request.employeeType}
+           </p>
+
+          <p>
+            <strong>Action Required:</strong><br/>
+            Please review the request and complete the IT approval process.
+          </p>
+
+          <p>
+            <a href="${process.env.FRONTEND_URL}/approve/${id}/${next.token}">
+              Click here to access the IT approval page
+            </a>
+          </p>
+
+          <p>Regards,<br/>
+          <strong>TPL IT Service Portal</strong></p>
+      `
       );
+
     }
 
     await request.save();

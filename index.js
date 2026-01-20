@@ -8,11 +8,21 @@ const cors = require("cors");
 const requestRoute = require("./routes/requestRoute");
 const approveRoute = require("./routes/approveRoute");
 const auditRoute = require("./routes/auditRoute");
+const itAuthRoute = require("./routes/itAuthRoute");
+const itDashboardRoute = require("./routes/itDashboardRoute");
 
 const { sequelize } = require("./models");
 
 
-app.use(cors());
+app.use(
+  cors({
+    origin: process.env.FRONTEND_URL,
+    credentials: true,
+    allowedHeaders: ["Content-Type", "x-it-session"],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+  })
+);
+app.options("*", cors());
 app.use(express.json());
 
 sequelize.sync({ alter: true })
@@ -22,6 +32,8 @@ sequelize.sync({ alter: true })
 app.use("/api/request", requestRoute);
 app.use("/api/approve", approveRoute);
 app.use("/api/audit-report", auditRoute);
+app.use("/api/it-auth", itAuthRoute);
+app.use("/api/it-dashboard", itDashboardRoute);
 
 app.get("/", (req, res) => {
   res.send("Backend is running");
