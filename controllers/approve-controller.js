@@ -229,7 +229,7 @@ const postApproveController = async (req, res) => {
         <p>An Email ID Creation request has been <strong>approved by the Functional Head</strong> and now requires your review.</p>
 
         <p>
-          <strong>Employee Name:</strong> ${request.employeeName}<br/>
+          <strong>Employee Name:</strong> ${request.firstName} ${request.lastName}<br/>
           <strong>Employee Type:</strong> ${request.employeeType}
         </p>
         <p>
@@ -265,7 +265,7 @@ const postApproveController = async (req, res) => {
           <p>An Email ID Creation request has been <strong>approved by HR</strong> and is pending your action.</p>
 
           <p>
-            <strong>Employee Name:</strong> ${request.employeeName}<br/>
+            <strong>Employee Name:</strong> ${request.firstName} ${request.lastName}<br/>
             <strong>Employee Type:</strong> ${request.employeeType}
            </p>
 
